@@ -1,8 +1,8 @@
 <?php
 /*
-Plugin Name: SMS Gateway
+Plugin Name: WPMVC
 Plugin URI: http://edentic.dk/
-Description: Connects up with sms1919 and saves SMSes
+Description: Core of WPMVC framework - has to be enabled for plugin using this framework to work!
 Version: 1.0
 Author: Edentic I/S
 Author URI: http://edentic.dk
