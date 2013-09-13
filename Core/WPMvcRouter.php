@@ -13,7 +13,7 @@ class WPMvcRouter extends WPPluginMVC {
 
     public function loadController($controllerName = null, $method = null) {
         if(!isset($controllerName) || !is_string($controllerName)) return true;
-        $controllerName = $this->getTopNamespace(). "\\app\\controller\\". $controllerName;
+        $controllerName = $this->getTopNamespace(). "\\controller\\". $controllerName;
 
         if(!class_exists($controllerName)) {
             throw new \Exception('Could not find the given controller!');
