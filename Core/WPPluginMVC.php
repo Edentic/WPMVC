@@ -15,9 +15,9 @@ class WPPluginMVC
     private  $jsFolder;
 
     public function __construct() {
-        $this->viewFolder = SMSGATEWAY_PLUGIN_PATH. "app/views/";
-        $this->cssFolder = SMSGATEWAY_URL_PATH. "app/css/";
-        $this->jsFolder = SMSGATEWAY_URL_PATH. "app/js/";
+        $this->viewFolder = $this->getPluginDir(). "views/";
+        $this->cssFolder = $this->getPluginDir(). "css/";
+        $this->jsFolder = $this->getPluginDir(). "js/";
     }
 
     public function loadView($view = null, $data = array(), $return = false) {
@@ -106,7 +106,7 @@ class WPPluginMVC
      * @throws \Exception
      */
     protected function getTopNamespace() {
-        $namespace = __NAMESPACE__;
+        $namespace = get_class($this);
         $levels = explode('\\', $namespace);
 
         if(is_array($levels)) {
@@ -116,6 +116,16 @@ class WPPluginMVC
         }
 
         throw new \Exception('Toplevel could not be found!');
+    }
+
+    /**
+     * Returns path to plugin directory
+     * @return string
+     */
+    public function getPluginDir() {
+        $pluginName = $this->getTopNamespace();
+        $path = WP_PLUGIN_DIR. "/". $pluginName. "/";
+        return $path;
     }
 
     /**
