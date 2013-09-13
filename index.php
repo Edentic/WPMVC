@@ -9,25 +9,12 @@ Author URI: http://edentic.dk
 */
 
 namespace WPMVC;
-
-//Loading in loader
-use WPMVC\app\Init;
-use WPMVC\app\Plugin;
-
-//Setting plugin path
-define('SMSGATEWAY_PLUGIN_PATH', plugin_dir_path(__FILE__));
-define('SMSGATEWAY_URL_PATH', plugin_dir_url((__FILE__)));
-
-include_once SMSGATEWAY_PLUGIN_PATH. 'Core/splloader.php';
+include_once plugin_dir_url(__FILE__). 'Core/splloader.php';
 
 if(!class_exists('SplClassLoader')) {
     throw new \Exception('SplClassLoader cannot be found!');
     die();
 }
 
-$splLoader = new \SplClassLoader('SMSGateway', WP_PLUGIN_DIR);
+$splLoader = new \SplClassLoader('WPMVC', WP_PLUGIN_DIR);
 $splLoader->register();
-
-if(!isset($SMSGateway)) {
-    $SMSGateway = new Plugin();
-}
