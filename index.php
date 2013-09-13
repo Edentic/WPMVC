@@ -9,7 +9,7 @@ Author URI: http://edentic.dk
 */
 
 namespace WPMVC;
-include_once plugin_dir_url(__FILE__). 'Core/splloader.php';
+include_once plugin_dir_path(__FILE__). 'Core/splloader.php';
 
 if(!class_exists('SplClassLoader')) {
     throw new \Exception('SplClassLoader cannot be found!');
