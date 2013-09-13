@@ -1,25 +1,75 @@
 <?php
 /**
- * ::: PLUGIN CONTROLLER ::
- * Contains standard functions for loading in plugins etc.
+ * ::: PLUGIN MVC CORE ::
+ *  WPPluginMVC class is the core of the framework, and contains core methods for register namespaces, loading in views and models.
+ *  Every class(controller, Model) is nested from this core and has access to these functions.
  *
  * @Author: Edentic I/S
  * @Version: 1.0
+ *
+ * The MIT License (MIT)
+ *
+ * Copyright (c) 2013 Edentic I/S
+
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
+
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
+
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
  */
-namespace SMSGateway\Core;
+
+namespace WPMVC\Core;
 
 class WPPluginMVC
 {
+    /**
+     * Contains path to view folder
+     * @var string
+     */
     private  $viewFolder;
+
+    /**
+     * Contains path to CSS folder
+     * @var string
+     */
     private  $cssFolder;
+
+    /**
+     * Contains path to JavaScript folder
+     * @var string
+     */
     private  $jsFolder;
 
+    /**
+     * Constructor method for core - setting up folder paths used to get files
+     */
     public function __construct() {
-        $this->viewFolder = SMSGATEWAY_PLUGIN_PATH. "app/views/";
-        $this->cssFolder = SMSGATEWAY_URL_PATH. "app/css/";
-        $this->jsFolder = SMSGATEWAY_URL_PATH. "app/js/";
+        $this->viewFolder = $this->getPluginDir(). "view/";
+        $this->cssFolder = $this->getPluginDir(). "css/";
+        $this->jsFolder = $this->getPluginDir(). "js/";
     }
 
+    /**
+     * Load a view from the given file name in view folder
+     *
+     * @param null $view - Filename of the view without extension
+     * @param array $data - Array of variables that should be parsed to view
+     * @param bool $return - If true the view will be returned as a string
+     * @return string
+     * @throws \Exception
+     */
     public function loadView($view = null, $data = array(), $return = false) {
         if(!isset($view)) {
             return;
@@ -42,28 +92,39 @@ class WPPluginMVC
             }
 
         } else {
-            throw new Exception($view. " doesn't exists!");
+            throw new \Exception($view. " doesn't exists!");
         }
     }
 
     /**
      * Loads a new model into context
-     * @param String $modelname
-     * @throws Exception;
+     * The model can be retrived through $this-><modelname>
+     *
+     * @param $modelname - Class name of model
+     * @throws \Exception
      */
     public function loadModel($modelname) {
         $class = $this->getClassName($modelname);
         if(isset($this->$class)) return;
         if(!(isset($modelname) && is_string($modelname))) throw new Exception('Given parameter is not a string!');
-        $modelname = $this->getTopNamespace(). "\\app\\model\\". $modelname;
+        $modelname = $this->getTopNamespace(). "\\model\\". $modelname;
 
         if(class_exists($modelname)) {
             $this->$class = new $modelname();
         } else {
-            throw new Exception($modelname. " does not exist!");
+            if(!$this->registerNamespace($modelname)) {
+                throw new \Exception($modelname. " does not exist!");
+            }
         }
     }
 
+    /**
+     * Returns link to admin page
+     *
+     * @param $link - Name of the page
+     * @param array $parms - List of get parameters attached to link
+     * @return string
+     */
     public function getLink($link, $parms = array()) {
         if(!is_string($link)) return $link;
 
@@ -77,12 +138,8 @@ class WPPluginMVC
         return get_admin_url(null, $link);
     }
 
-    public function getPluginPath($optPath = "") {
-        return plugins_url($optPath, __FILE__);
-    }
-
     /**
-     * Returns filename for a path
+     * Returns class name of given path to file
      *
      * @param string $path
      * @return string
@@ -101,12 +158,13 @@ class WPPluginMVC
     }
 
     /**
-     * Returns toplevel namespace
+     * Returns toplevel namespace of current class
+     *
      * @return string
      * @throws \Exception
      */
     protected function getTopNamespace() {
-        $namespace = __NAMESPACE__;
+        $namespace = get_class($this);
         $levels = explode('\\', $namespace);
 
         if(is_array($levels)) {
@@ -116,6 +174,16 @@ class WPPluginMVC
         }
 
         throw new \Exception('Toplevel could not be found!');
+    }
+
+    /**
+     * Returns path to plugin directory of current plugin
+     * @return string
+     */
+    public function getPluginDir() {
+        $pluginName = $this->getTopNamespace();
+        $path = WP_PLUGIN_DIR. "/". $pluginName. "/";
+        return $path;
     }
 
     /**
@@ -143,5 +211,19 @@ class WPPluginMVC
             return $this->jsFolder. $file;
         }
         return $this->jsFolder;
+    }
+
+    /**
+     * Registers namespace for given class name
+     * @param $class
+     * @return bool
+     */
+    protected function registerNamespace($class) {
+        if(!class_exists($class)) {
+            $splLoader = new \SplClassLoader($this->getTopNamespace(), WP_PLUGIN_DIR);
+            $splLoader->register();
+        }
+
+        return class_exists($class);
     }
 }
