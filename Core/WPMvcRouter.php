@@ -36,7 +36,9 @@ class WPMvcRouter extends WPPluginMVC {
         $controllerName = $this->getTopNamespace(). "\\controller\\". $controllerName;
 
         if(!class_exists($controllerName)) {
-            throw new \Exception('Could not find the given controller!');
+            if(!$this->registerNamespace($controllerName)) {
+                throw new \Exception('Could not find the given controller: '. $controllerName);
+            }
         }
 
         $contollerClass = $this->getClassName($controllerName);

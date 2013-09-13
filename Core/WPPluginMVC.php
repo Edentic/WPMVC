@@ -55,12 +55,14 @@ class WPPluginMVC
         $class = $this->getClassName($modelname);
         if(isset($this->$class)) return;
         if(!(isset($modelname) && is_string($modelname))) throw new Exception('Given parameter is not a string!');
-        $modelname = $this->getTopNamespace(). "\\app\\model\\". $modelname;
+        $modelname = $this->getTopNamespace(). "\\model\\". $modelname;
 
         if(class_exists($modelname)) {
             $this->$class = new $modelname();
         } else {
-            throw new Exception($modelname. " does not exist!");
+            if(!$this->registerNamespace($modelname)) {
+                throw new Exception($modelname. " does not exist!");
+            }
         }
     }
 
@@ -75,10 +77,6 @@ class WPPluginMVC
         }
 
         return get_admin_url(null, $link);
-    }
-
-    public function getPluginPath($optPath = "") {
-        return plugins_url($optPath, __FILE__);
     }
 
     /**
@@ -153,5 +151,17 @@ class WPPluginMVC
             return $this->jsFolder. $file;
         }
         return $this->jsFolder;
+    }
+
+    /**
+     * Registers namespace for plugin
+     */
+    protected function registerNamespace($class) {
+        if(!class_exists($class)) {
+            $splLoader = new \SplClassLoader($this->getTopNamespace(), WP_PLUGIN_DIR);
+            $splLoader->register();
+        }
+
+        return class_exists($class);
     }
 }
