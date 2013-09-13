@@ -7,8 +7,8 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace SMSGateway\Core\controller;
-use SMSGateway\Core\WPPluginMVC;
+namespace WPMVC\Core\controller;
+use WPMVC\Core\WPPluginMVC;
 
 class Controller  extends WPPluginMVC {
     public function index() {

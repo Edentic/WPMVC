@@ -6,7 +6,7 @@
  * @Author: Edentic I/S
  * @Version: 1.0
  */
-namespace SMSGateway\Core;
+namespace WPMVC\Core;
 
 class WPPluginMVC
 {

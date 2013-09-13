@@ -8,11 +8,11 @@ Author: Edentic I/S
 Author URI: http://edentic.dk
 */
 
-namespace SMSGateway;
+namespace WPMVC;
 
 //Loading in loader
-use SMSGateway\app\Init;
-use SMSGateway\app\Plugin;
+use WPMVC\app\Init;
+use WPMVC\app\Plugin;
 
 //Setting plugin path
 define('SMSGATEWAY_PLUGIN_PATH', plugin_dir_path(__FILE__));

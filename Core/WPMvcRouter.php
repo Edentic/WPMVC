@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace SMSGateway\Core;
+namespace WPMVC\Core;
 
 class WPMvcRouter extends WPPluginMVC {
 

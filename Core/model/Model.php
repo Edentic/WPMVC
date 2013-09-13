@@ -7,7 +7,7 @@
  * To change this template use File | Settings | File Templates.
  */
 
-namespace SMSGateway\Core\model;
+namespace WPMVC\Core\model;
 
 
 class Model {
