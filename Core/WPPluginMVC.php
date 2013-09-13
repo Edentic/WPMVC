@@ -15,7 +15,7 @@ class WPPluginMVC
     private  $jsFolder;
 
     public function __construct() {
-        $this->viewFolder = $this->getPluginDir(). "views/";
+        $this->viewFolder = $this->getPluginDir(). "view/";
         $this->cssFolder = $this->getPluginDir(). "css/";
         $this->jsFolder = $this->getPluginDir(). "js/";
     }
@@ -42,14 +42,15 @@ class WPPluginMVC
             }
 
         } else {
-            throw new Exception($view. " doesn't exists!");
+            throw new \Exception($view. " doesn't exists!");
         }
     }
 
     /**
      * Loads a new model into context
-     * @param String $modelname
-     * @throws Exception;
+     * @param $modelname
+     * @throws \Exception
+     * @throws Exception
      */
     public function loadModel($modelname) {
         $class = $this->getClassName($modelname);
@@ -61,11 +62,18 @@ class WPPluginMVC
             $this->$class = new $modelname();
         } else {
             if(!$this->registerNamespace($modelname)) {
-                throw new Exception($modelname. " does not exist!");
+                throw new \Exception($modelname. " does not exist!");
             }
         }
     }
 
+    /**
+     * Returns link to admin page
+     *
+     * @param $link
+     * @param array $parms
+     * @return string
+     */
     public function getLink($link, $parms = array()) {
         if(!is_string($link)) return $link;
 
