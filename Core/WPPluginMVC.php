@@ -7,6 +7,8 @@
  * @Author: Edentic I/S
  * @Version: 1.0
  *
+ * The MIT License (MIT)
+ *
  * Copyright (c) 2013 Edentic I/S
 
     Permission is hereby granted, free of charge, to any person obtaining a copy
