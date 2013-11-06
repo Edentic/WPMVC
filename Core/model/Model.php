@@ -33,6 +33,6 @@ namespace WPMVC\Core\model;
 
 class Model {
 
-    private $hejMedDig = "Tjek";
+    private $hejMedDig = "hej";
 
 }
