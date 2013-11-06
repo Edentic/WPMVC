@@ -1,0 +1,240 @@
+<?php
+/**
+ * ::: Custom Post Model :::
+ * Represents a single custom post
+ */
+
+namespace WPMVC\Core\model;
+
+
+class CustomPostModel {
+    protected  $ID;
+    protected static $customPostName;
+    protected $doNotSaveVars = array();
+    protected $customPostOptions = array();
+
+    //Post fields
+    protected $postTitle;
+    protected $postContent;
+    protected $postDate;
+    protected $postStatus;
+    protected $taxInput;
+    protected $tags;
+
+
+
+    public function __construct() {
+        $this->doNotSaveVars[] = "ID";
+        $this->doNotSaveVars[] = "customPostName";
+        $this->doNotSaveVars[] = "doNotSaveVars";
+        $this->doNotSaveVars[] = "customPostOptions";
+        $this->doNotSaveVars[] = "postTitle";
+
+        $this->customPostOptions = array(
+            'public' => true,
+            'exclude_from_search' => true,
+            'publicly_queryable' => false,
+            'show_ui' => true,
+            'show_in_nav_menus' => true,
+            'show_in_menu' => true,
+            'supports' => array(
+                'title' => true,
+                'editor' => true,
+                'author' => false,
+                'thumbnail' => true,
+                'excerpt' => false,
+                'trackbacks' => false,
+                'custom-fields' => false,
+                'comments' => false,
+                'revisions' => true,
+            )
+        );
+
+        $this->postStatus = 'publish';
+        $this->postDate = new \DateTime('now', new \DateTimeZone('Europe/Copenhagen'));
+        $this->tags = array();
+        $this->taxInput = array();
+
+        $this->createCustomPostType();
+    }
+
+    /**
+     * Loads new post from db
+     *
+     * @param $post_id
+     * @throws \Exception
+     */
+    public function load($post_id) {
+        $post = get_post($post_id);
+        if(!$post) {
+            throw new \Exception('Post could not be found on given ID');
+        }
+
+        $this->ID = $post->ID;
+        $this->postDate = new \DateTime($post->post_date, new \DateTimeZone('Europe/Copenhagen'));
+        $this->postContent = $post->post_content;
+        $this->postTitle = $post->post_title;
+        $this->postStatus = $post->post_status;
+        $this->customPostName = $post->post_type;
+
+        $metaData = get_post_meta($this->ID);
+
+        foreach($metaData as $key => $value) {
+            $this->$key = $value;
+        }
+    }
+
+    /**
+     * Returns all posts of this post type
+     * @return mixed
+     */
+    public static function all() {
+        $posts = get_posts(array('post_type' => self::$customPostName, 'posts_per_page' => -1));
+
+        $o = array();
+        foreach($posts as $post) {
+            $class = __CLASS__;
+            $obj = new $class;
+            $obj->load($post->ID);
+            $o[] = $obj;
+        }
+
+        return $o;
+    }
+
+    /**
+     * Returns post from specific query
+     * @param array $query
+     * @return mixed
+     */
+    public static function where(Array $query) {
+        $inpQuery = array_merge($query, array('post_type' => self::$customPostName, 'posts_per_page' => -1));
+        $posts = get_posts($inpQuery);
+
+        $o = array();
+        foreach($posts as $post) {
+            $class = __CLASS__;
+            $obj = new $class;
+            $obj->load($post->ID);
+            $o[] = $obj;
+        }
+
+        return $o;
+    }
+
+    /**
+     * Saves post to database
+     */
+    public function save() {
+
+        $inputArray = array(
+            'post_title' => $this->postTitle,
+            'post_content' => $this->postContent,
+            'post_date' => $this->postDate->format('Y-m-d H:i:s'),
+            'post_status' => $this->postStatus,
+            'tax_input' => $this->taxInput,
+            'tags_input' => $this->tags,
+            'post_type' => $this->customPostName
+        );
+
+        if(!$this->ID) {
+            $this->createPost($inputArray);
+        } else {
+            $this->updatePost($inputArray);
+        }
+
+        $this->updateMeta();
+    }
+
+    /**
+     * Deletes post from database
+     * @return bool
+     * @throws \Exception
+     */
+    public function delete() {
+        if(!$this->ID) {
+            throw new \Exception('No post has been loaded into model!');
+        }
+
+       if(wp_delete_post($this->ID, true) === false) {
+            throw new \Exception('Post could not be deleted!');
+       }
+
+        return true;
+    }
+
+    /**
+     * Creates a new post and updates its ID
+     *
+     * @param array $inputArray
+     * @throws \Exception
+     * @return int|\WP_Error
+     */
+    private function createPost(Array $inputArray) {
+        $postID = wp_insert_post($inputArray, true);
+        if($postID instanceof \WP_Error) {
+            throw new \Exception('Post could not be inserted!');
+        };
+
+        return $postID;
+    }
+
+    /**
+     * Updates post in db
+     * @param array $inputArray
+     * @return int|\WP_Error
+     * @throws \Exception
+     */
+    private function updatePost(Array $inputArray) {
+        $inputArray['ID'] = $this->ID;
+        $postID = wp_update_post($inputArray, true);
+        if($postID instanceof \WP_Error) {
+            throw new \Exception('Post could not be inserted!');
+        };
+
+        return $postID;
+    }
+
+    /**
+     * Updates meta fields and creates new ones
+     */
+    private function updateMeta() {
+        $vars = $this->getVars();
+
+        foreach($vars as $fieldname => $value) {
+            (get_post_meta($this->ID, $fieldname)) ? add_post_meta($this->ID, $fieldname, $value) : update_post_meta($this->ID, $fieldname, $value);
+        }
+    }
+
+    /**
+     * Returns a filtered list of object variables
+     * @return array
+     */
+    private function getVars() {
+        $vars = get_object_vars($this);
+        $o = array();
+        foreach($vars as $key => $value) {
+            if(!in_array($key, $this->doNotSaveVars)) $o[$key] = $value;
+        }
+
+        return $o;
+    }
+
+    /**
+     * Registers a new custom post type with given name
+     * @throws \Exception
+     */
+    public function createCustomPostType() {
+        if(!$this->customPostName) throw new \Exception('Custom post type name has to be given');
+        if(get_post_type_object($this->customPostName) !== false) {
+            return false;
+        };
+
+       if(register_post_type($this->customPostName, $this->customPostOptions) instanceof \WP_Error) {
+           throw new \Exception('Post type could not be created!');
+       };
+
+        return true;
+    }
+
+} 
