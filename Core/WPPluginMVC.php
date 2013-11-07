@@ -102,12 +102,13 @@ class WPPluginMVC
      *
      * @param $modelname - Class name of model
      * @throws \Exception
+     * @throws Exception
      */
     public function loadModel($modelname) {
         $class = $this->getClassName($modelname);
         if(isset($this->$class)) return;
         if(!(isset($modelname) && is_string($modelname))) throw new Exception('Given parameter is not a string!');
-        $modelname = $this->getTopNamespace(). "\\model\\". $modelname;
+        $modelname = $this->getModelFullNamespace($modelname, 'model');
 
         if(class_exists($modelname)) {
             $this->$class = new $modelname();
@@ -116,6 +117,17 @@ class WPPluginMVC
                 throw new \Exception($modelname. " does not exist!");
             }
         }
+    }
+
+    /**
+     * Returns full path of a class
+     * @param $name
+     * @param $type
+     * @internal param string $modelname
+     * @return string
+     */
+    public function getFullNamespace($name, $type) {
+        return $this->getTopNamespace(). "\\". $type. "\\". $name;
     }
 
     /**
