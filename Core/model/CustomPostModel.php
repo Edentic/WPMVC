@@ -121,11 +121,18 @@ abstract class CustomPostModel {
         }
     }
 
+    private static function classTest() {
+        if(__CLASS__ == static::$__CLASS__) {
+            throw new \Exception('A static protected $__CLASS__ = __CLASS__ has to be declared in your custom post model!');
+        }
+    }
+
     /**
      * Returns all posts of this post type
      * @return mixed
      */
     public static function all() {
+        self::classTest();
         $posts = get_posts(array('post_type' => static::$customPostName, 'posts_per_page' => -1));
 
         $o = array();
@@ -145,6 +152,7 @@ abstract class CustomPostModel {
      * @return mixed
      */
     public static function where(Array $query) {
+        self::classTest();
         $inpQuery = array_merge($query, array('post_type' => static::$customPostName, 'posts_per_page' => -1));
         $posts = get_posts($inpQuery);
 
@@ -263,6 +271,8 @@ abstract class CustomPostModel {
      * @throws \Exception
      */
     public static function createCustomPostType() {
+        self::classTest();
+
         if(!static::$customPostName) throw new \Exception('Custom post type name has to be given');
         if(get_post_type_object(static::$customPostName) != false) {
             return false;
