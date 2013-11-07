@@ -6,29 +6,43 @@
 
 namespace WPMVC\Core\model;
 
-class CustomPostModel {
+abstract class CustomPostModel {
     protected  $ID;
-    static protected $customPostName;
+    static protected $__CLASS__ = __CLASS__;
+
+    /**
+     * Name of the custom post
+     * @var string
+     */
+    static protected $customPostName = '';
+
+    /**
+     * Features the custom post type supports
+     * @var array
+     */
+    static protected $supports = array(
+            'title',
+            'editor',
+            'revisions'
+        );
+
+    /**
+     * Options for the custom post type
+     * @var array
+     */
     static protected $customPostOptions = array(
         'public' => true,
         'exclude_from_search' => true,
         'publicly_queryable' => false,
         'show_ui' => true,
         'show_in_nav_menus' => true,
-        'show_in_menu' => true,
-        'supports' => array(
-            'title' => true,
-            'editor' => true,
-            'author' => false,
-            'thumbnail' => true,
-            'excerpt' => false,
-            'trackbacks' => false,
-            'custom-fields' => false,
-            'comments' => false,
-            'revisions' => true,
-        )
+        'show_in_menu' => true
     );
 
+    /**
+     * Custom post type variables that should not be saved!
+     * @var array
+     */
     protected $doNotSaveVars = array();
 
     //Post fields
@@ -47,6 +61,12 @@ class CustomPostModel {
         $this->doNotSaveVars[] = "doNotSaveVars";
         $this->doNotSaveVars[] = "customPostOptions";
         $this->doNotSaveVars[] = "postTitle";
+        $this->doNotSaveVars[] = "postContent";
+        $this->doNotSaveVars[] = "postDate";
+        $this->doNotSaveVars[] = "postStatus";
+        $this->doNotSaveVars[] = "taxInput";
+        $this->doNotSaveVars[] = "tags";
+
 
         $this->postStatus = 'publish';
         $this->postDate = new \DateTime('now', new \DateTimeZone('Europe/Copenhagen'));
@@ -55,6 +75,17 @@ class CustomPostModel {
 
         $this->createCustomPostType();
     }
+
+    /**
+     * Returns ID of post type
+     * @return mixed
+     */
+    public function getID()
+    {
+        return $this->ID;
+    }
+
+
 
     /**
      * Loads new post from db
@@ -68,6 +99,10 @@ class CustomPostModel {
             throw new \Exception('Post could not be found on given ID');
         }
 
+        if($post->post_type !== strtolower(static::$customPostName)) {
+            throw new \Exception('Custom post type does not match given model!');
+        }
+
         $this->ID = $post->ID;
         $this->postDate = new \DateTime($post->post_date, new \DateTimeZone('Europe/Copenhagen'));
         $this->postContent = $post->post_content;
@@ -78,6 +113,10 @@ class CustomPostModel {
         $metaData = get_post_meta($this->ID);
 
         foreach($metaData as $key => $value) {
+            if(is_array($value) && count($value) <= 1) {
+                $value = $value[0];
+            }
+
             $this->$key = $value;
         }
     }
@@ -87,11 +126,11 @@ class CustomPostModel {
      * @return mixed
      */
     public static function all() {
-        $posts = get_posts(array('post_type' => self::$customPostName, 'posts_per_page' => -1));
+        $posts = get_posts(array('post_type' => static::$customPostName, 'posts_per_page' => -1));
 
         $o = array();
         foreach($posts as $post) {
-            $class = __CLASS__;
+            $class = static::$__CLASS__;
             $obj = new $class;
             $obj->load($post->ID);
             $o[] = $obj;
@@ -106,12 +145,12 @@ class CustomPostModel {
      * @return mixed
      */
     public static function where(Array $query) {
-        $inpQuery = array_merge($query, array('post_type' => self::$customPostName, 'posts_per_page' => -1));
+        $inpQuery = array_merge($query, array('post_type' => static::$customPostName, 'posts_per_page' => -1));
         $posts = get_posts($inpQuery);
 
         $o = array();
         foreach($posts as $post) {
-            $class = __CLASS__;
+            $class = static::$__CLASS__;
             $obj = new $class;
             $obj->load($post->ID);
             $o[] = $obj;
@@ -132,11 +171,11 @@ class CustomPostModel {
             'post_status' => $this->postStatus,
             'tax_input' => $this->taxInput,
             'tags_input' => $this->tags,
-            'post_type' => $this->customPostName
+            'post_type' => static::$customPostName
         );
 
         if(!$this->ID) {
-            $this->createPost($inputArray);
+            $this->ID = $this->createPost($inputArray);
         } else {
             $this->updatePost($inputArray);
         }
@@ -200,6 +239,7 @@ class CustomPostModel {
         $vars = $this->getVars();
 
         foreach($vars as $fieldname => $value) {
+            var_dump($this->ID);
             (get_post_meta($this->ID, $fieldname)) ? add_post_meta($this->ID, $fieldname, $value) : update_post_meta($this->ID, $fieldname, $value);
         }
     }
@@ -229,7 +269,13 @@ class CustomPostModel {
         };
 
         $options = static::$customPostOptions;
-        $options['label'] = static::$customPostName;
+        if(!isset($options['label'])) {
+            $options['label'] = static::$customPostName;
+        }
+
+        if(!isset($options['supports'])) {
+            $options['supports'] = static::$supports;
+        }
 
        if(register_post_type(static::$customPostName, $options) instanceof \WP_Error) {
            throw new \Exception('Post type could not be created!');
