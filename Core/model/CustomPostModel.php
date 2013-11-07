@@ -6,12 +6,30 @@
 
 namespace WPMVC\Core\model;
 
-
 class CustomPostModel {
     protected  $ID;
-    protected static $customPostName;
+    static protected $customPostName;
+    static protected $customPostOptions = array(
+        'public' => true,
+        'exclude_from_search' => true,
+        'publicly_queryable' => false,
+        'show_ui' => true,
+        'show_in_nav_menus' => true,
+        'show_in_menu' => true,
+        'supports' => array(
+            'title' => true,
+            'editor' => true,
+            'author' => false,
+            'thumbnail' => true,
+            'excerpt' => false,
+            'trackbacks' => false,
+            'custom-fields' => false,
+            'comments' => false,
+            'revisions' => true,
+        )
+    );
+
     protected $doNotSaveVars = array();
-    protected $customPostOptions = array();
 
     //Post fields
     protected $postTitle;
@@ -29,26 +47,6 @@ class CustomPostModel {
         $this->doNotSaveVars[] = "doNotSaveVars";
         $this->doNotSaveVars[] = "customPostOptions";
         $this->doNotSaveVars[] = "postTitle";
-
-        $this->customPostOptions = array(
-            'public' => true,
-            'exclude_from_search' => true,
-            'publicly_queryable' => false,
-            'show_ui' => true,
-            'show_in_nav_menus' => true,
-            'show_in_menu' => true,
-            'supports' => array(
-                'title' => true,
-                'editor' => true,
-                'author' => false,
-                'thumbnail' => true,
-                'excerpt' => false,
-                'trackbacks' => false,
-                'custom-fields' => false,
-                'comments' => false,
-                'revisions' => true,
-            )
-        );
 
         $this->postStatus = 'publish';
         $this->postDate = new \DateTime('now', new \DateTimeZone('Europe/Copenhagen'));
@@ -224,13 +222,16 @@ class CustomPostModel {
      * Registers a new custom post type with given name
      * @throws \Exception
      */
-    public function createCustomPostType() {
-        if(!$this->customPostName) throw new \Exception('Custom post type name has to be given');
-        if(get_post_type_object($this->customPostName) !== false) {
+    public static function createCustomPostType() {
+        if(!static::$customPostName) throw new \Exception('Custom post type name has to be given');
+        if(get_post_type_object(static::$customPostName) != false) {
             return false;
         };
 
-       if(register_post_type($this->customPostName, $this->customPostOptions) instanceof \WP_Error) {
+        $options = static::$customPostOptions;
+        $options['label'] = static::$customPostName;
+
+       if(register_post_type(static::$customPostName, $options) instanceof \WP_Error) {
            throw new \Exception('Post type could not be created!');
        };
 
