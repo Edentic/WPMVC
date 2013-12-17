@@ -278,7 +278,7 @@ abstract class CustomPostModel {
         };
 
         $options = static::$customPostOptions;
-        if(!isset($options['label'])) {
+        if(!isset($options['labels'])) {
             $options['label'] = static::$customPostName;
         }
 
