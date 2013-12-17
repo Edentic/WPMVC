@@ -4,7 +4,7 @@
  * Represents a single custom post
  */
 
-namespace WPMVC\Core\model;
+namespace plugins\WPMVC\Core\model;
 
 abstract class CustomPostModel {
     protected  $ID;
@@ -232,7 +232,7 @@ abstract class CustomPostModel {
      */
     private function updatePost(Array $inputArray) {
         $inputArray['ID'] = $this->ID;
-        $postID = wp_update_post($inputArray, true);
+        $postID = \wp_update_post($inputArray, true);
         if($postID instanceof \WP_Error) {
             throw new \Exception('Post could not be inserted!');
         };
@@ -247,7 +247,6 @@ abstract class CustomPostModel {
         $vars = $this->getVars();
 
         foreach($vars as $fieldname => $value) {
-            var_dump($this->ID);
             (get_post_meta($this->ID, $fieldname)) ? add_post_meta($this->ID, $fieldname, $value) : update_post_meta($this->ID, $fieldname, $value);
         }
     }

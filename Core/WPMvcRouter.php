@@ -29,9 +29,9 @@
     THE SOFTWARE.
  */
 
-namespace WPMVC\Core;
+namespace plugins\WPMVC\Core;
 
-use WPMVC\Core\model\CustomPostModel;
+use plugins\WPMVC\Core\model\CustomPostModel;
 
 class WPMvcRouter extends WPPluginMVC {
 

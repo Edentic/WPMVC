@@ -30,7 +30,7 @@
     THE SOFTWARE.
  */
 
-namespace WPMVC\Core;
+namespace plugins\WPMVC\Core;
 
 class WPPluginMVC
 {
@@ -180,7 +180,7 @@ class WPPluginMVC
         $levels = explode('\\', $namespace);
 
         if(is_array($levels)) {
-            return $levels[0];
+            return $levels[0]. '\\'. $levels[1];
         } elseif(is_string($levels)) {
             return $levels;
         }

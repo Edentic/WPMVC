@@ -30,7 +30,7 @@ Author URI: http://edentic.dk
     THE SOFTWARE.
 */
 
-namespace WPMVC;
+namespace plugins\WPMVC;
 include_once plugin_dir_path(__FILE__). 'Core/splloader.php';
 
 if(!class_exists('SplClassLoader')) {
@@ -38,5 +38,5 @@ if(!class_exists('SplClassLoader')) {
     die();
 }
 
-$splLoader = new \SplClassLoader('WPMVC', WP_PLUGIN_DIR);
+$splLoader = new \SplClassLoader('plugins', WP_CONTENT_DIR);
 $splLoader->register();
