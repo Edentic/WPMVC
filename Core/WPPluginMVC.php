@@ -175,12 +175,16 @@ class WPPluginMVC
      * @return string
      * @throws \Exception
      */
-    protected function getTopNamespace() {
+    protected function getTopNamespace($returnFullPath = true) {
         $namespace = get_class($this);
         $levels = explode('\\', $namespace);
 
         if(is_array($levels)) {
-            return $levels[0]. '\\'. $levels[1];
+            if($returnFullPath) {
+                return $levels[0]. '\\'. $levels[1];
+            }
+
+            return $levels[1];
         } elseif(is_string($levels)) {
             return $levels;
         }
@@ -193,7 +197,7 @@ class WPPluginMVC
      * @return string
      */
     public function getPluginDir() {
-        $pluginName = $this->getTopNamespace();
+        $pluginName = $this->getTopNamespace(false);
         $path = WP_PLUGIN_DIR. "/". $pluginName. "/";
         return $path;
     }
