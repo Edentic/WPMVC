@@ -86,21 +86,21 @@ abstract class CustomPostModel {
     }
 
 
-
     /**
      * Loads new post from db
      *
      * @param $post_id
+     * @return bool
      * @throws \Exception
      */
     public function load($post_id) {
         $post = get_post($post_id);
         if(!$post) {
-            throw new \Exception('Post could not be found on given ID');
+            return false;
         }
 
         if($post->post_type !== strtolower(static::$customPostName)) {
-            throw new \Exception('Custom post type does not match given model!');
+            return false;
         }
 
         $this->ID = $post->ID;
@@ -119,6 +119,8 @@ abstract class CustomPostModel {
 
             $this->$key = $value;
         }
+
+        return true;
     }
 
     private static function classTest() {
