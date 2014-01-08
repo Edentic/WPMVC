@@ -172,22 +172,23 @@ abstract class CustomPostModel {
     /**
      * Saves post to database
      */
-    public function save() {
+    public function save($doPostUpdate = false) {
+        if($doPostUpdate == true) {
+            $inputArray = array(
+                'post_title' => $this->postTitle,
+                'post_content' => $this->postContent,
+                'post_date' => $this->postDate->format('Y-m-d H:i:s'),
+                'post_status' => $this->postStatus,
+                'tax_input' => $this->taxInput,
+                'tags_input' => $this->tags,
+                'post_type' => static::$customPostName
+            );
 
-        $inputArray = array(
-            'post_title' => $this->postTitle,
-            'post_content' => $this->postContent,
-            'post_date' => $this->postDate->format('Y-m-d H:i:s'),
-            'post_status' => $this->postStatus,
-            'tax_input' => $this->taxInput,
-            'tags_input' => $this->tags,
-            'post_type' => static::$customPostName
-        );
-
-        if(!$this->ID) {
-            $this->ID = $this->createPost($inputArray);
-        } else {
-            $this->updatePost($inputArray);
+            if(!$this->ID) {
+                $this->ID = $this->createPost($inputArray);
+            } else {
+                $this->updatePost($inputArray);
+            }
         }
 
         $this->updateMeta();
@@ -249,7 +250,7 @@ abstract class CustomPostModel {
         $vars = $this->getVars();
 
         foreach($vars as $fieldname => $value) {
-            (get_post_meta($this->ID, $fieldname)) ? add_post_meta($this->ID, $fieldname, $value) : update_post_meta($this->ID, $fieldname, $value);
+            (!get_post_meta($this->ID, $fieldname)) ? add_post_meta($this->ID, $fieldname, $value, true) : update_post_meta($this->ID, $fieldname, $value);
         }
     }
 
