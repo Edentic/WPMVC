@@ -117,6 +117,10 @@ abstract class CustomPostModel {
                 $value = $value[0];
             }
 
+            if(($value == serialize(false) || @unserialize($value) !== false)) {
+                $value = unserialize($value);
+            }
+
             $this->$key = $value;
         }
 
@@ -131,11 +135,26 @@ abstract class CustomPostModel {
 
     /**
      * Returns all posts of this post type
+     * @param $post_per_page
+     * @param int $page
+     * @param string $orderBy
+     * @param string $order
+     * @param string $post_status
      * @return mixed
      */
-    public static function all() {
+    public static function all($post_per_page = -1, $page = 0, $orderBy = 'post_date', $order = 'DESC', $post_status = 'publish') {
         self::classTest();
-        $posts = get_posts(array('post_type' => static::$customPostName, 'posts_per_page' => -1));
+
+        $offset = $post_per_page * $page;
+        $posts = get_posts(array(
+            'post_type' => static::$customPostName,
+            'posts_per_page' => $post_per_page,
+            'offset' => $offset,
+            'order_by' => $orderBy,
+            'order' => $order,
+            'post_status' => $post_status,
+            'numberposts' => $post_per_page
+        ));
 
         $o = array();
         foreach($posts as $post) {
