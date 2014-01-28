@@ -60,7 +60,9 @@ class WPMvcRouter extends WPPluginMVC {
         foreach($this->registerPostTypeModels as $postTypeModel) {
             /* @var CustomPostModel $postTypeModel */
             $postTypeModel = $this->getFullNamespace($postTypeModel, 'model');
-            add_action('init', array($postTypeModel, 'createCustomPostType'));
+            if(is_subclass_of($postTypeModel, 'plugins\WPMVC\Core\model\CustomPostModel')) {
+                add_action('init', array($postTypeModel, 'createCustomPostType'));
+            }
         }
     }
 
