@@ -29,15 +29,20 @@
     THE SOFTWARE.
  */
 
-namespace WPMVC\Core;
+namespace plugins\WPMVC\Core;
+
+use plugins\WPMVC\Core\model\CustomPostModel;
 
 class WPMvcRouter extends WPPluginMVC {
+
+    protected $registerPostTypeModels = array();
 
     /**
      * Runs the hookup method
      */
     public function __construct() {
         parent::__construct();
+        $this->initPostTypeModels();
         $this->hookUp();
     }
 
@@ -46,6 +51,19 @@ class WPMvcRouter extends WPPluginMVC {
      */
     protected function hookUp() {
 
+    }
+
+    /**
+     * Initialzes posttype models
+     */
+    private function initPostTypeModels() {
+        foreach($this->registerPostTypeModels as $postTypeModel) {
+            /* @var CustomPostModel $postTypeModel */
+            $postTypeModel = $this->getFullNamespace($postTypeModel, 'model');
+            if(is_subclass_of($postTypeModel, 'plugins\WPMVC\Core\model\CustomPostModel')) {
+                add_action('init', array($postTypeModel, 'createCustomPostType'));
+            }
+        }
     }
 
     /**
@@ -58,7 +76,7 @@ class WPMvcRouter extends WPPluginMVC {
      */
     public function loadController($controllerName = null, $method = null) {
         if(!isset($controllerName) || !is_string($controllerName)) return true;
-        $controllerName = $this->getTopNamespace(). "\\controller\\". $controllerName;
+        $controllerName = $this->getFullNamespace($controllerName, 'controller');
 
         if(!class_exists($controllerName)) {
             if(!$this->registerNamespace($controllerName)) {

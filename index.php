@@ -30,13 +30,18 @@ Author URI: http://edentic.dk
     THE SOFTWARE.
 */
 
-namespace WPMVC;
+namespace plugins\WPMVC;
 include_once plugin_dir_path(__FILE__). 'Core/splloader.php';
 
 if(!class_exists('SplClassLoader')) {
-    throw new \Exception('SplClassLoader cannot be found!');
-    die();
-}
+    if(!function_exists('SplClassLoader_NOT_Loaded')) {
+        function SplClassLoader_NOT_Loaded() {
+            echo "<div class='error'>SplClassLoader could not be loaded!</div>";
+        }
 
-$splLoader = new \SplClassLoader('WPMVC', WP_PLUGIN_DIR);
-$splLoader->register();
+        add_action('admin_notices', 'SplClassLoader_NOT_Loaded');
+    }
+} else {
+    $splLoader = new \SplClassLoader('plugins', WP_CONTENT_DIR);
+    $splLoader->register();
+}

@@ -29,8 +29,8 @@
     THE SOFTWARE.
  */
 
-namespace WPMVC\Core\controller;
-use WPMVC\Core\WPPluginMVC;
+namespace plugins\WPMVC\Core\controller;
+use plugins\WPMVC\Core\WPPluginMVC;
 
 class Controller  extends WPPluginMVC {
     public function index() {

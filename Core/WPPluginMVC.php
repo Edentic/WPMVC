@@ -30,7 +30,7 @@
     THE SOFTWARE.
  */
 
-namespace WPMVC\Core;
+namespace plugins\WPMVC\Core;
 
 class WPPluginMVC
 {
@@ -102,12 +102,13 @@ class WPPluginMVC
      *
      * @param $modelname - Class name of model
      * @throws \Exception
+     * @throws Exception
      */
     public function loadModel($modelname) {
         $class = $this->getClassName($modelname);
         if(isset($this->$class)) return;
         if(!(isset($modelname) && is_string($modelname))) throw new Exception('Given parameter is not a string!');
-        $modelname = $this->getTopNamespace(). "\\model\\". $modelname;
+        $modelname = $this->getModelFullNamespace($modelname, 'model');
 
         if(class_exists($modelname)) {
             $this->$class = new $modelname();
@@ -116,6 +117,17 @@ class WPPluginMVC
                 throw new \Exception($modelname. " does not exist!");
             }
         }
+    }
+
+    /**
+     * Returns full path of a class
+     * @param $name
+     * @param $type
+     * @internal param string $modelname
+     * @return string
+     */
+    public function getFullNamespace($name, $type) {
+        return $this->getTopNamespace(). "\\". $type. "\\". $name;
     }
 
     /**
@@ -163,12 +175,16 @@ class WPPluginMVC
      * @return string
      * @throws \Exception
      */
-    protected function getTopNamespace() {
+    protected function getTopNamespace($returnFullPath = true) {
         $namespace = get_class($this);
         $levels = explode('\\', $namespace);
 
         if(is_array($levels)) {
-            return $levels[0];
+            if($returnFullPath) {
+                return $levels[0]. '\\'. $levels[1];
+            }
+
+            return $levels[1];
         } elseif(is_string($levels)) {
             return $levels;
         }
@@ -181,7 +197,7 @@ class WPPluginMVC
      * @return string
      */
     public function getPluginDir() {
-        $pluginName = $this->getTopNamespace();
+        $pluginName = $this->getTopNamespace(false);
         $path = WP_PLUGIN_DIR. "/". $pluginName. "/";
         return $path;
     }
